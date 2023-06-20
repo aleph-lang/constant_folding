@@ -159,16 +159,22 @@ fn constant_folding(ast: at, env: &Env) -> (at, Env) {
             let (expr1_result, env2) = constant_folding(*expr1, env);
             let (expr2_result, env3) = constant_folding(*expr2, &env2);
             match(is_simple(expr1_result.clone()), is_simple(expr2_result.clone())) {
-            (true, true) => (at::Bool{value: (expr1_result.to_string_value()==expr2_result.to_string_value()).to_string()}, env3),
-            _ => (at::Eq{expr1: Box::new(expr1_result), expr2: Box::new(expr2_result)}, env3)
+                (true, true) => match(expr1_result.clone(), expr2_result.clone()) {
+                    (at::Ident{..}, at::Ident{..}) => (at::Eq{expr1: Box::new(expr1_result), expr2: Box::new(expr2_result)}, env3),
+                    _ =>(at::Bool{value: (expr1_result.to_string_value()==expr2_result.to_string_value()).to_string()}, env3),
+                },
+                _ => (at::Eq{expr1: Box::new(expr1_result), expr2: Box::new(expr2_result)}, env3)
             }
         },
         at::LE{expr1, expr2} => {
             let (expr1_result, env2) = constant_folding(*expr1, env);
             let (expr2_result, env3) = constant_folding(*expr2, &env2);
             match(is_simple(expr1_result.clone()), is_simple(expr2_result.clone())) {
-            (true, true) => (at::Bool{value: (expr1_result.to_string_value()<=expr2_result.to_string_value()).to_string()}, env3),
-            _ => (at::LE{expr1: Box::new(expr1_result), expr2: Box::new(expr2_result)}, env3)
+                (true, true) => match(expr1_result.clone(), expr2_result.clone()) {
+                    (at::Ident{..}, at::Ident{..}) => (at::LE{expr1: Box::new(expr1_result), expr2: Box::new(expr2_result)}, env3),
+                    _ =>(at::Bool{value: (expr1_result.to_string_value()==expr2_result.to_string_value()).to_string()}, env3),
+                },
+                _ => (at::LE{expr1: Box::new(expr1_result), expr2: Box::new(expr2_result)}, env3)
             }
         },
         at::If{condition, then, els} => {
