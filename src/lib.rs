@@ -160,7 +160,14 @@ fn constant_folding(ast: at, env: &Env) -> (at, Env) {
             let (expr2_result, env3) = constant_folding(*expr2, &env2);
             match(is_simple(expr1_result.clone()), is_simple(expr2_result.clone())) {
                 (true, true) => match(expr1_result.clone(), expr2_result.clone()) {
-                    (at::Ident{..}, at::Ident{..}) => (at::Eq{expr1: Box::new(expr1_result), expr2: Box::new(expr2_result)}, env3),
+                    (at::Ident{..}, _) => match expr1_result.to_string_value()==expr2_result.to_string_value() {
+                        true => (at::Bool{value: "true".to_string()}, env3),
+                        _ =>(at::Eq{expr1: Box::new(expr1_result), expr2: Box::new(expr2_result)}, env3),
+                    },
+                    (_, at::Ident{..}) => match expr1_result.to_string_value()==expr2_result.to_string_value() {
+                        true => (at::Bool{value: "true".to_string()}, env3),
+                        _ =>(at::Eq{expr1: Box::new(expr1_result), expr2: Box::new(expr2_result)}, env3),
+                    },
                     _ =>(at::Bool{value: (expr1_result.to_string_value()==expr2_result.to_string_value()).to_string()}, env3),
                 },
                 _ => (at::Eq{expr1: Box::new(expr1_result), expr2: Box::new(expr2_result)}, env3)
@@ -171,8 +178,15 @@ fn constant_folding(ast: at, env: &Env) -> (at, Env) {
             let (expr2_result, env3) = constant_folding(*expr2, &env2);
             match(is_simple(expr1_result.clone()), is_simple(expr2_result.clone())) {
                 (true, true) => match(expr1_result.clone(), expr2_result.clone()) {
-                    (at::Ident{..}, at::Ident{..}) => (at::LE{expr1: Box::new(expr1_result), expr2: Box::new(expr2_result)}, env3),
-                    _ =>(at::Bool{value: (expr1_result.to_string_value()==expr2_result.to_string_value()).to_string()}, env3),
+                    (at::Ident{..}, _) => match expr1_result.to_string_value()<=expr2_result.to_string_value() {
+                        true => (at::Bool{value: "true".to_string()}, env3),
+                        _ =>(at::LE{expr1: Box::new(expr1_result), expr2: Box::new(expr2_result)}, env3),
+                    },
+                    (_, at::Ident{..}) => match expr1_result.to_string_value()<=expr2_result.to_string_value() {
+                        true => (at::Bool{value: "true".to_string()}, env3),
+                        _ =>(at::LE{expr1: Box::new(expr1_result), expr2: Box::new(expr2_result)}, env3),
+                    },
+                    _ =>(at::Bool{value: (expr1_result.to_string_value()<=expr2_result.to_string_value()).to_string()}, env3),
                 },
                 _ => (at::LE{expr1: Box::new(expr1_result), expr2: Box::new(expr2_result)}, env3)
             }
